@@ -16,6 +16,7 @@ import { ACTION, HTTP_CODES, USER_API } from "./config/constants";
 import NotFound from "./components/NotFound";
 import LoadingDotsIcon from "./components/LoadingDotsIcon";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
+import UserManagement from "./components/UserManagement/UserManagement";
 
 Axios.defaults.baseURL = "http://localhost:8080";
 Axios.defaults.withCredentials = true;
@@ -92,6 +93,14 @@ function Main() {
                   element={
                     <ProtectedRoute authorisedGroup="">
                       <Profile />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/user-management"
+                  element={
+                    <ProtectedRoute authorisedGroup="admin">
+                      <UserManagement />
                     </ProtectedRoute>
                   }
                 />

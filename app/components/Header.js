@@ -39,7 +39,9 @@ function Header() {
         {/* User function icons */}
         {appState.loggedIn && (
           <div>
-            <FontAwesomeIcon icon={faUsersGear} className="header-icon" />
+            <Link to="/user-management">
+              <FontAwesomeIcon icon={faUsersGear} className="header-icon" />
+            </Link>
             <Link to="/profile">
               <FontAwesomeIcon icon={faUser} className="header-icon" />
             </Link>

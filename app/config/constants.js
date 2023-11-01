@@ -1,21 +1,36 @@
 // =================== API ENDPOINTS ==================
 const API_VERSION = "/api/v1";
+const AUTH_API_BASE = `${API_VERSION}/auth`;
+const USER_API_BASE = `${API_VERSION}/user`;
+const ADMIN_API_BASE = `${API_VERSION}/admin`;
+
 export const AUTH_API = {
-  login: `${API_VERSION}/auth/login`,
-  logout: `${API_VERSION}/auth/logout`,
-  verifySession: `${API_VERSION}/auth/verify/session`
+  login: `${AUTH_API_BASE}/login`,
+  logout: `${AUTH_API_BASE}/logout`,
+  verifySession: `${AUTH_API_BASE}/verify/session`
 };
 
 export const USER_API = {
-  currentUser: `${API_VERSION}/user/profile`
+  currentUser: `${USER_API_BASE}/profile`
+};
+
+export const ADMIN_API = {
+  getAllUsers: `${ADMIN_API_BASE}/user/all`,
+  getAllGroups: `${ADMIN_API_BASE}/group/all`,
+  createGroup: `${ADMIN_API_BASE}/group`
 };
 
 // =================== DISPATCH ACTIONS ==================
 export const ACTION = {
+  // App
   login: "login",
   logout: "logout",
   flashMessage: "flashMessage",
-  fetchUser: "fetch"
+  fetchUser: "fetch",
+
+  // User management
+  populateGroups: "populateGroups",
+  createGroup: "createGroup"
 };
 
 export const HTTP_CODES = {

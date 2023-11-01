@@ -7,6 +7,7 @@ import Page from "./Page";
 import UserStateContext from "./ProtectedRoute/UserStateContext";
 import { ACTION, HTTP_CODES, USER_API } from "../config/constants";
 import DispatchContext from "../DispatchContext";
+import PasswordChangeInput from "./PasswordChangeInput";
 
 function Profile() {
   const { userState, setUserState } = useContext(UserStateContext);
@@ -18,29 +19,6 @@ function Profile() {
   const [canSubmit, setCanSubmit] = useState(false);
 
   const navigate = useNavigate();
-
-  function validatePassword() {
-    // Define variables for each part of the regular expression
-    const atLeastOneAlphabet = "(?=.+[A-Za-z])";
-    const atLeastOneNumber = "(?=.+\\d)";
-    const atLeastOneSpecial = "(?=.+[@$!%*?&.,;^_()=+\\-\\[\\]{}~:;'\"<>/|])";
-    const allowedCharacters =
-      "([A-Za-z\\d@$!%*?&.,;^_()=+\\-\\[\\]{}~:;'\"<>/|])";
-    const minMaxLen = "{8,10}";
-
-    // Construct the full regular expression using the defined parts
-    const passwordPattern = new RegExp(
-      `^${atLeastOneAlphabet}${atLeastOneNumber}${atLeastOneSpecial}${allowedCharacters}${minMaxLen}$`
-    );
-
-    if (!password || passwordPattern.test(password)) {
-      setPasswordError("");
-    } else {
-      setPasswordError(
-        "Password must be 8-10 characters and contain alphabets, numbers, and special characters."
-      );
-    }
-  }
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -89,16 +67,6 @@ function Profile() {
     return () => clearTimeout(enableSubmitDebounce);
   }, [userState, email, password, passwordError]);
 
-  let validatePasswordDebounce;
-  useEffect(() => {
-    setCanSubmit(false);
-    validatePasswordDebounce = setTimeout(() => {
-      validatePassword();
-    }, 500);
-
-    return () => clearTimeout(validatePasswordDebounce);
-  }, [password]);
-
   return (
     <Page title="Profile" wide={true}>
       {/* ====================== Page Header ====================== */}
@@ -145,21 +113,15 @@ function Profile() {
           <label htmlFor="password-change" className="text-muted mb-1">
             Password
           </label>
-          <input
-            onChange={e => setPassword(e.target.value)}
-            id="password-change"
-            name="password"
-            className="form-control"
-            type="password"
+          <PasswordChangeInput
+            password={password}
+            setPassword={setPassword}
+            passwordError={passwordError}
+            setPasswordError={setPasswordError}
+            setCanSubmit={setCanSubmit}
             placeholder="New Password"
-            value={password}
           />
         </div>
-
-        {passwordError !== "" && (
-          <small className="text-danger">{passwordError}</small>
-        )}
-        {}
 
         {/* ===================== Submit button ===================== */}
         <div className="text-center">
