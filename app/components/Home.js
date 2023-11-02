@@ -10,7 +10,7 @@ function Home() {
 
   return (
     <ProtectedRoute authorisedGroup="">
-      <Page title="Welcome!" wide={true}>
+      <Page title="Welcome!">
         <div className="row align-items-center">
           <div className="col-lg-15 py-3 py-md-5">
             <h1 className="display-3">

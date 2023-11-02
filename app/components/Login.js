@@ -17,7 +17,6 @@ function Login() {
     e.preventDefault();
     try {
       const response = await Axios.post(AUTH_API.login, { username, password });
-      console.log(response);
       console.log("Successful login");
 
       appDispatch({ type: ACTION.login, value: username });
@@ -35,7 +34,7 @@ function Login() {
   }
 
   return (
-    <Page title="Login" wide={true}>
+    <Page title="Login">
       <div className="container py-md-5">
         {/* ====================== Page Header ====================== */}
         <header className="col-5 mx-auto mb-4">

@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -19,12 +19,29 @@ function Header() {
   const appDispatch = useContext(DispatchContext);
   const navigate = useNavigate();
 
+  const [displayUserManagement, setDisplayUserManagement] = useState(false);
+
   async function handleLogout() {
     await Axios.get(AUTH_API.logout);
     appDispatch({ type: ACTION.logout });
     appDispatch({ type: ACTION.flashMessage, value: "Logout successful" });
     navigate("/");
   }
+
+  useEffect(() => {
+    async function checkAdmin() {
+      if (appState.loggedIn) {
+        try {
+          await Axios.get(AUTH_API.verifyGroup("admin"));
+          setDisplayUserManagement(true);
+        } catch (error) {
+          setDisplayUserManagement(false);
+        }
+      }
+    }
+
+    checkAdmin();
+  }, [appState]);
 
   return (
     <header className="header-bar bg-primary mb-3">
@@ -39,9 +56,11 @@ function Header() {
         {/* User function icons */}
         {appState.loggedIn && (
           <div>
-            <Link to="/user-management">
-              <FontAwesomeIcon icon={faUsersGear} className="header-icon" />
-            </Link>
+            {displayUserManagement && (
+              <Link to="/user-management">
+                <FontAwesomeIcon icon={faUsersGear} className="header-icon" />
+              </Link>
+            )}
             <Link to="/profile">
               <FontAwesomeIcon icon={faUser} className="header-icon" />
             </Link>

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import Axios from "axios";
 
 // Custome modules
-import { AUTH_API, USER_API } from "../../config/constants";
+import { ACTION, AUTH_API, USER_API } from "../../config/constants";
 import LoadingDotsIcon from "../LoadingDotsIcon";
 import NotFound from "../NotFound";
 import UserStateContext from "./UserStateContext";
+import DispatchContext from "../../DispatchContext";
 
 /**
  * A wrapper component that checks user authorization and renders
@@ -18,6 +19,7 @@ import UserStateContext from "./UserStateContext";
  *
  */
 function ProtectedRoute(props) {
+  const appDispatch = useContext(DispatchContext);
   const [isAuthorised, setIsAuthorised] = useState();
   const [userState, setUserState] = useState({
     usernamme: "",
@@ -31,8 +33,12 @@ function ProtectedRoute(props) {
     async function checkAuthorised() {
       try {
         //Fetch user
+        console.log("Checking");
+        await Axios.get(AUTH_API.verifySession);
+
         const response = await Axios.get(USER_API.currentUser);
         const user = response.data.user[0] || null;
+        console.log(user);
 
         if (!user) {
           throw new Error("User not found");
@@ -47,15 +53,24 @@ function ProtectedRoute(props) {
         //Check groups
         const userGroupsStr = user.groups;
         const userGroups = userGroupsStr.split("/");
+        console.log(isAuthorised);
         if (
           props.authorisedGroup === "" ||
           userGroups.includes(props.authorisedGroup)
         ) {
           setIsAuthorised(true);
+          console.log(isAuthorised);
         } else {
+          console.log(
+            `${props.authorisedGroup === ""} || ${userGroups.includes(
+              props.authorisedGroup
+            )}`
+          );
           setIsAuthorised(false);
+          console.log(isAuthorised);
         }
       } catch (error) {
+        appDispatch({ type: ACTION.logout });
         setIsAuthorised(false);
         console.error("Page not found");
       }
@@ -64,15 +79,20 @@ function ProtectedRoute(props) {
     checkAuthorised();
   }, []);
 
+  useEffect(() => {
+    console.log(isAuthorised);
+  }, [isAuthorised]);
+
   return (
     <>
-      {isAuthorised === null && <LoadingDotsIcon />}
+      {isAuthorised === undefined && <LoadingDotsIcon />}
       {isAuthorised && (
         <UserStateContext.Provider value={{ userState, setUserState }}>
           {props.children}
         </UserStateContext.Provider>
       )}
-      {!isAuthorised && <NotFound />}
+      {/* !isAuthorised wouldnt work since isAuthorised can be undefined*/}
+      {isAuthorised === false && <NotFound />}
     </>
   );
 }

@@ -3,7 +3,7 @@ import Axios from "axios";
 
 // Custom modules
 import Page from "../Page";
-import User from "./User";
+import EditUser from "./EditUser";
 import { useImmerReducer } from "use-immer";
 import { ADMIN_API, ACTION } from "../../config/constants";
 import LoadingDotsIcon from "../LoadingDotsIcon";
@@ -11,13 +11,36 @@ import LoadingDotsIcon from "../LoadingDotsIcon";
 // Context
 import UserManagementStateContext from "./UserManagementStateContext";
 import UserManagementDispatchContext from "./UserManagementDispatchContext";
+import CreateUser from "./CreateUser";
 
 function UserManagement() {
   const [isLoading, setIsLoading] = useState(true);
-  const [users, setUsers] = useState([]);
 
   function userMgmtReducer(draft, action) {
     switch (action.type) {
+      case ACTION.populateUsers:
+        draft.users = action.value;
+        break;
+      case ACTION.editUser:
+        const user = draft.users.find(
+          user => user.username === action.value.username
+        );
+        const editedFields = action.value.editedFields;
+
+        user.email = editedFields.email || user.email;
+
+        if (user.groups) {
+          if (user.groups.length === 0) {
+            delete user.groups;
+          } else {
+            user.groups = editedFields.groups;
+          }
+        }
+
+        if (editedFields.isActive) {
+          user.is_active = editedFields.isActive === "active" ? 1 : 0;
+        }
+        break;
       case ACTION.populateGroups:
         draft.groups = action.value;
         break;
@@ -28,7 +51,8 @@ function UserManagement() {
   }
 
   const [state, dispatch] = useImmerReducer(userMgmtReducer, {
-    groups: ["a", "b"]
+    users: [],
+    groups: []
   });
 
   useEffect(() => {
@@ -43,8 +67,9 @@ function UserManagement() {
       });
 
       // Get users
-      setUsers(
-        allUsersResponse.data.users.map(userData => {
+      dispatch({
+        type: ACTION.populateUsers,
+        value: allUsersResponse.data.users.map(userData => {
           const groups = userData.groups.split("/");
           const user = { ...userData, groups };
           if (user.groups[0] === "") {
@@ -53,7 +78,7 @@ function UserManagement() {
           console.log(user);
           return user;
         })
-      );
+      });
 
       setIsLoading(false);
     }
@@ -66,7 +91,7 @@ function UserManagement() {
       {isLoading ? (
         <LoadingDotsIcon />
       ) : (
-        <Page title="User Management" wide={true}>
+        <Page title="User Management" width={"wide"}>
           <UserManagementStateContext.Provider value={state}>
             <UserManagementDispatchContext.Provider value={dispatch}>
               <h1>User Management</h1>
@@ -83,8 +108,11 @@ function UserManagement() {
                   </tr>
                 </thead>
                 <tbody>
-                  {users.map((user, index) => {
-                    return <User user={user} index={index} />;
+                  <CreateUser />
+                  {state.users.map((user, index) => {
+                    return (
+                      <EditUser user={user} index={index + 1} key={index + 1} />
+                    );
                   })}
                 </tbody>
               </table>

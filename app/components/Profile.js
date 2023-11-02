@@ -68,7 +68,7 @@ function Profile() {
   }, [userState, email, password, passwordError]);
 
   return (
-    <Page title="Profile" wide={true}>
+    <Page title="Profile">
       {/* ====================== Page Header ====================== */}
       <header className="col-5 mx-auto mb-4">
         {" "}

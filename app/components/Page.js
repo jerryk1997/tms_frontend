@@ -9,7 +9,7 @@ function Page(props) {
     window.scrollTo(0, 0);
   }, [props.title]);
 
-  return <Container wide={props.wide}>{props.children}</Container>;
+  return <Container width={props.width}>{props.children}</Container>;
 }
 
 export default Page;

@@ -6,6 +6,10 @@ body {
   background-color: #292929;
 }
 
+.container--wide {
+  max-width: 90%; /* Wide width */
+}
+
 .container--narrow {
   max-width: 732px;
 }

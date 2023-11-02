@@ -7,7 +7,8 @@ const ADMIN_API_BASE = `${API_VERSION}/admin`;
 export const AUTH_API = {
   login: `${AUTH_API_BASE}/login`,
   logout: `${AUTH_API_BASE}/logout`,
-  verifySession: `${AUTH_API_BASE}/verify/session`
+  verifySession: `${AUTH_API_BASE}/verify-session`,
+  verifyGroup: group => `${AUTH_API_BASE}/verify/${group}`
 };
 
 export const USER_API = {
@@ -17,7 +18,8 @@ export const USER_API = {
 export const ADMIN_API = {
   getAllUsers: `${ADMIN_API_BASE}/user/all`,
   getAllGroups: `${ADMIN_API_BASE}/group/all`,
-  createGroup: `${ADMIN_API_BASE}/group`
+  createGroup: `${ADMIN_API_BASE}/group`,
+  editUser: username => `${ADMIN_API_BASE}/user/${username}`
 };
 
 // =================== DISPATCH ACTIONS ==================
@@ -29,6 +31,8 @@ export const ACTION = {
   fetchUser: "fetch",
 
   // User management
+  populateUsers: "populateUsers",
+  editUser: "editUser",
   populateGroups: "populateGroups",
   createGroup: "createGroup"
 };
