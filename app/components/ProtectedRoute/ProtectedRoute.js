@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
-import { useNavigate } from "react-router-dom";
-import Axios from "axios";
+import Axios, { AxiosError } from "axios";
+import { useImmerReducer } from "use-immer";
 
 // Custome modules
-import { ACTION, AUTH_API, USER_API } from "../../config/constants";
+import { ACTION, AUTH_API, HTTP_CODES } from "../../config/constants";
 import LoadingDotsIcon from "../LoadingDotsIcon";
 import NotFound from "../NotFound";
-import UserStateContext from "./UserStateContext";
+import DispatchCheckContext from "./DispatchCheckContext";
 import DispatchContext from "../../DispatchContext";
 
 /**
@@ -20,81 +20,72 @@ import DispatchContext from "../../DispatchContext";
  */
 function ProtectedRoute(props) {
   const appDispatch = useContext(DispatchContext);
-  const [isAuthorised, setIsAuthorised] = useState();
-  const [userState, setUserState] = useState({
-    usernamme: "",
-    email: ""
-  });
+  const [renderContent, setRenderContent] = useState(<LoadingDotsIcon />);
 
-  const navigate = useNavigate();
+  function toggleReducer(draft, action) {
+    switch (action.type) {
+      case ACTION.toggle:
+        draft.state = !draft.state;
+        break;
+    }
+  }
+  const [checkToggle, toggleDispatch] = useImmerReducer(toggleReducer, {
+    state: true
+  });
 
   // Check authorised.
   useEffect(() => {
     async function checkAuthorised() {
       try {
-        //Fetch user
-        console.log("Checking");
+        // ============= Check user logged in =============
+        console.log(`Checking <${props.authorisedGroup}>`, props.children);
+        console.log(`<${props.authorisedGroup}> Checking session`);
         await Axios.get(AUTH_API.verifySession);
+        console.log(`<${props.authorisedGroup}> session verified`);
 
-        const response = await Axios.get(USER_API.currentUser);
-        const user = response.data.user[0] || null;
-        console.log(user);
-
-        if (!user) {
-          throw new Error("User not found");
-        }
-
-        // Set username and email for context
-        setUserState({
-          username: user.username,
-          email: user.email
-        });
-
-        //Check groups
-        const userGroupsStr = user.groups;
-        const userGroups = userGroupsStr.split("/");
-        console.log(isAuthorised);
-        if (
-          props.authorisedGroup === "" ||
-          userGroups.includes(props.authorisedGroup)
-        ) {
-          setIsAuthorised(true);
-          console.log(isAuthorised);
-        } else {
-          console.log(
-            `${props.authorisedGroup === ""} || ${userGroups.includes(
-              props.authorisedGroup
-            )}`
+        // ============= Check group if needed =============
+        if (props.authorisedGroup !== "") {
+          console.log(`<${props.authorisedGroup}> Checking group`);
+          const sanitisedAuthorisedGroup = encodeURIComponent(
+            props.authorisedGroup
           );
-          setIsAuthorised(false);
-          console.log(isAuthorised);
+          console.log(AUTH_API.verifyGroup(sanitisedAuthorisedGroup));
+          try {
+            await Axios.get(AUTH_API.verifyGroup(sanitisedAuthorisedGroup));
+            console.log(`<${props.authorisedGroup}> Authorised`);
+
+            // Authorised, setting page content
+            setRenderContent(
+              <DispatchCheckContext.Provider value={toggleDispatch}>
+                {props.children}
+              </DispatchCheckContext.Provider>
+            );
+          } catch (error) {
+            if (
+              error instanceof AxiosError &&
+              error.response.status === HTTP_CODES.unauthorised
+            ) {
+              // Unauthorised, setting page not found
+              setRenderContent(<NotFound />);
+              console.log(`<${props.authorisedGroup}> Unauthorised`);
+            }
+          }
+        } else {
+          console.log(`<${props.authorisedGroup}> Authorised`);
+          setRenderContent(props.children);
         }
       } catch (error) {
         appDispatch({ type: ACTION.logout });
-        setIsAuthorised(false);
+        setRenderContent(<NotFound />);
         console.error("Page not found");
       }
     }
-
+    console.log("Before checking");
+    setRenderContent(<LoadingDotsIcon />);
     checkAuthorised();
-  }, []);
+  }, [props.authorisedGroup, checkToggle, props.children]);
 
-  useEffect(() => {
-    console.log(isAuthorised);
-  }, [isAuthorised]);
-
-  return (
-    <>
-      {isAuthorised === undefined && <LoadingDotsIcon />}
-      {isAuthorised && (
-        <UserStateContext.Provider value={{ userState, setUserState }}>
-          {props.children}
-        </UserStateContext.Provider>
-      )}
-      {/* !isAuthorised wouldnt work since isAuthorised can be undefined*/}
-      {isAuthorised === false && <NotFound />}
-    </>
-  );
+  return <>{renderContent}</>;
 }
 
 export default ProtectedRoute;

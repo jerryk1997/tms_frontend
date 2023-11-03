@@ -41,7 +41,7 @@ function Header() {
     }
 
     checkAdmin();
-  }, [appState]);
+  });
 
   return (
     <header className="header-bar bg-primary mb-3">
@@ -57,7 +57,7 @@ function Header() {
         {appState.loggedIn && (
           <div>
             {displayUserManagement && (
-              <Link to="/user-management">
+              <Link to="user-management">
                 <FontAwesomeIcon icon={faUsersGear} className="header-icon" />
               </Link>
             )}

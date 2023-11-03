@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useContext } from "react";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
-import Axios from "axios";
+import Axios, { AxiosError } from "axios";
 
 // Custom modules
-import { ACTION, ADMIN_API } from "../../config/constants";
+import { ACTION, ADMIN_API, HTTP_CODES } from "../../config/constants";
 
 // Context
 import DispatchContext from "../../DispatchContext";
 import UserManagementStateContext from "./UserManagementStateContext";
 import UserManagementDispatchContext from "./UserManagementDispatchContext";
+import DispatchCheckContext from "../ProtectedRoute/DispatchCheckContext";
 import PasswordChangeInput from "../PasswordChangeInput";
 
 function EditUser({ user, index }) {
@@ -17,17 +18,18 @@ function EditUser({ user, index }) {
   const appDispatch = useContext(DispatchContext);
   const userMgmtState = useContext(UserManagementStateContext);
   const userMgmtDispatch = useContext(UserManagementDispatchContext);
+  const checkDispatch = useContext(DispatchCheckContext);
 
   // ======================= Row state =======================
   const [isEditing, setIsEditing] = useState(false);
   const [groupOptions, setGroupOptions] = useState();
 
-  const [email, setEmail] = useState(user.email);
+  const [email, setEmail] = useState(user.email || "");
 
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const [selectedGroupOptions, setSelectedGroups] = useState();
+  const [selectedGroupOptions, setSelectedGroups] = useState([]);
   const [selectedStatusOption, setSelectedStatus] = useState();
 
   const [canSubmit, setCanSubmit] = useState(false);
@@ -44,6 +46,7 @@ function EditUser({ user, index }) {
 
   async function handleConfirm() {
     const editedFields = {};
+    // ============= Construct request body =============
     if (email !== user.email) {
       editedFields.email = email;
     }
@@ -71,16 +74,19 @@ function EditUser({ user, index }) {
     ) {
       editedFields.isActive = selectedStatusOption.value;
     }
-
     console.log(editedFields);
+
+    // ============= Send request =============
     try {
-      await Axios.put(ADMIN_API.editUser(user.username), editedFields, {
+      await Axios.put(ADMIN_API.user(user.username), editedFields, {
         headers: {
           "Content-Type": "application/json"
         }
       });
 
       setPassword("");
+
+      // Update page state
       userMgmtDispatch({
         type: ACTION.editUser,
         value: {
@@ -88,13 +94,27 @@ function EditUser({ user, index }) {
           editedFields
         }
       });
+      // Flash message
       appDispatch({
         type: ACTION.flashMessage,
         value: "Successfully edited user"
       });
     } catch (error) {
-      console.log(error);
-      appDispatch({ type: ACTION.flashMessage, value: "Failed to edit user" });
+      if (
+        error instanceof AxiosError &&
+        error.response.status === HTTP_CODES.unauthorised
+      ) {
+        appDispatch({
+          type: ACTION.flashMessage,
+          value: "Failed to edit user"
+        });
+        checkDispatch({ type: ACTION.toggle });
+      } else {
+        appDispatch({
+          type: ACTION.flashMessage,
+          value: "There was an error"
+        });
+      }
     }
     setIsEditing(false);
   }
@@ -264,31 +284,34 @@ function EditUser({ user, index }) {
       <td
         style={{
           maxWidth: "100px",
-          textAlign: "center",
-          verticalAlign: "middle"
+          textAlign: "center"
         }}
       >
         <div style={{ width: "flex", gap: "30px" }}>
           {isEditing ? (
             <>
-              <button
-                type="button"
-                className="btn btn-success btn-sm"
-                onClick={handleConfirm}
-                style={{ marginBottom: "5px" }}
-                ref={button => button && button.blur()}
-                disabled={!canSubmit}
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                className="btn btn-danger btn-sm"
-                onClick={handleCancel}
-                ref={button => button && button.blur()}
-              >
-                Cancel
-              </button>
+              <div>
+                <button
+                  type="button"
+                  className="btn btn-success btn-sm"
+                  onClick={handleConfirm}
+                  style={{ marginBottom: "5px" }}
+                  ref={button => button && button.blur()}
+                  disabled={!canSubmit}
+                >
+                  Confirm
+                </button>
+              </div>
+              <div>
+                <button
+                  type="button"
+                  className="btn btn-danger btn-sm"
+                  onClick={handleCancel}
+                  ref={button => button && button.blur()}
+                >
+                  Cancel
+                </button>
+              </div>
             </>
           ) : (
             <button

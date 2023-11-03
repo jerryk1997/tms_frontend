@@ -9,20 +9,16 @@ function Home() {
   const appState = useContext(StateContext);
 
   return (
-    <ProtectedRoute authorisedGroup="">
-      <Page title="Welcome!">
-        <div className="row align-items-center">
-          <div className="col-lg-15 py-3 py-md-5">
-            <h1 className="display-3">
-              Hi {appState.username}, welcome to TMS!
-            </h1>
-            <p className="lead text-muted">
-              Hope you enjoy managing your tasks effectively
-            </p>
-          </div>
+    <Page title="Welcome!">
+      <div className="row align-items-center">
+        <div className="col-lg-15 py-3 py-md-5">
+          <h1 className="display-3">Hi {appState.username}, welcome to TMS!</h1>
+          <p className="lead text-muted">
+            Hope you enjoy managing your tasks effectively
+          </p>
         </div>
-      </Page>
-    </ProtectedRoute>
+      </div>
+    </Page>
   );
 }
 

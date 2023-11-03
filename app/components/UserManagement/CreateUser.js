@@ -1,43 +1,98 @@
 import React, { useState, useEffect, useContext } from "react";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
-import Axios from "axios";
+import Axios, { AxiosError } from "axios";
+import { useNavigate } from "react-router-dom";
 
 // Custom modules
-import { ACTION, ADMIN_API } from "../../config/constants";
+import { ACTION, ADMIN_API, HTTP_CODES } from "../../config/constants";
 
 // Context
 import DispatchContext from "../../DispatchContext";
 import UserManagementStateContext from "./UserManagementStateContext";
 import UserManagementDispatchContext from "./UserManagementDispatchContext";
+import DispatchCheckContext from "../ProtectedRoute/DispatchCheckContext";
 import PasswordChangeInput from "../PasswordChangeInput";
 
 function CreateUser() {
+  const navigate = useNavigate();
   // ======================= Context =======================
   const appDispatch = useContext(DispatchContext);
   const userMgmtState = useContext(UserManagementStateContext);
+  const userMgmtDispatch = useContext(UserManagementDispatchContext);
+  const checkDispatch = useContext(DispatchCheckContext);
 
   // ======================= Row state =======================
   const [groupOptions, setGroupOptions] = useState();
 
   const [username, setUsername] = useState("");
+  const [usernameError, setUsernameError] = useState("");
+
   const [email, setEmail] = useState("");
 
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const [selectedGroupOptions, setSelectedGroups] = useState();
-  const [selectedStatusOption, setSelectedStatus] = useState();
-
-  const [canSubmit, setCanSubmit] = useState(false);
+  const [selectedGroupOptions, setSelectedGroups] = useState([]);
 
   const userStatusOptions = [
     { label: "Active", value: "active" },
     { label: "Disabled", value: "disabled" }
   ];
+  const [selectedStatusOption, setSelectedStatus] = useState(
+    userStatusOptions[0]
+  );
+
+  const [canSubmit, setCanSubmit] = useState(false);
 
   // ======================= Event Listeners =======================
-  function handleCreateUser() {}
+  async function handleCreateUser() {
+    const user = {};
+
+    user.username = username;
+    user.password = password;
+
+    if (email) {
+      user.email = email;
+    }
+
+    if (selectedGroupOptions.length > 0) {
+      user.groups = selectedGroupOptions.map(option => option.value);
+    }
+
+    user.isActive = selectedStatusOption.value;
+
+    try {
+      await Axios.post(ADMIN_API.createUser, user, {
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      userMgmtDispatch({ type: ACTION.createUser, value: user });
+      appDispatch({
+        type: ACTION.flashMessage,
+        value: "Successfully created user"
+      });
+
+      setUsername("");
+      setEmail("");
+      setPassword("");
+      setSelectedGroups([]);
+      setSelectedStatus(userStatusOptions[0]);
+    } catch (error) {
+      appDispatch({
+        type: ACTION.flashMessage,
+        value: "Failed to create user"
+      });
+      if (
+        error instanceof AxiosError &&
+        error.response.status === HTTP_CODES.unauthorised
+      ) {
+        checkDispatch({ type: ACTION.toggle });
+      }
+    }
+  }
+
   function handleGroupChange(selectedGroups) {
     setSelectedGroups(selectedGroups);
   }
@@ -77,17 +132,57 @@ function CreateUser() {
     }
   }
 
+  // Debounce checks if
   // Checks if they user can submit changes
   let enableSubmitDebounce;
   useEffect(() => {
     enableSubmitDebounce = setTimeout(() => {
       const validNonEmptyPassword = password !== "" && passwordError === "";
+      const validNonEmptyUsername = username !== "" && usernameError === "";
 
-      setCanSubmit(username && validNonEmptyPassword);
+      setCanSubmit(validNonEmptyUsername && validNonEmptyPassword);
     }, 600); // Longer delay to allow passwordError to disable button
 
     return () => clearTimeout(enableSubmitDebounce);
-  }, [username, password, passwordError]);
+  }, [username, usernameError, password, passwordError]);
+
+  let usernameValidDebounce;
+  useEffect(() => {
+    setCanSubmit(false);
+    async function checkUsername() {
+      console.log("Checking create user username");
+      const alphanumericRegex = /^[a-zA-Z0-9]*$/; // Regex for alphanumeric characters
+
+      if (!alphanumericRegex.test(username)) {
+        console.log("failed");
+        setUsernameError(
+          "Username should only contain alphanumeric characters"
+        );
+      } else {
+        try {
+          const response = await Axios.get(ADMIN_API.user(username));
+          console.log(response);
+          setUsernameError("Username taken");
+        } catch (error) {
+          if (
+            error instanceof AxiosError &&
+            error.response.status === HTTP_CODES.notFound
+          ) {
+            console.log(`Username: <${username}> can be used`);
+            setUsernameError("");
+          } else {
+            console.log(error);
+          }
+        }
+      }
+    }
+
+    usernameValidDebounce = setTimeout(() => {
+      checkUsername();
+    }, 500);
+
+    return () => clearTimeout(usernameValidDebounce);
+  }, [username]);
 
   useEffect(() => {
     setGroupOptions(
@@ -107,7 +202,11 @@ function CreateUser() {
           className="form-control"
           value={username}
           onChange={e => setUsername(e.target.value)}
+          placeholder="Username is required"
         />
+        {usernameError && (
+          <small className="text-danger">{usernameError}</small>
+        )}
       </td>
 
       {/* ========== Email edit =========== */}
@@ -128,6 +227,7 @@ function CreateUser() {
           setPasswordError={setPasswordError}
           setCanSubmit={setCanSubmit}
           className="form-control"
+          placeholder="Password is required"
         />
       </td>
 
@@ -154,8 +254,7 @@ function CreateUser() {
       {/* ========== Buttons =========== */}
       <td
         style={{
-          textAlign: "center",
-          verticalAlign: "middle"
+          textAlign: "center"
         }}
       >
         <button

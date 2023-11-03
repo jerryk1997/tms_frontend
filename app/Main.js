@@ -26,8 +26,10 @@ function Main() {
   const initialState = {
     loggedIn: false,
     username: null,
+    renderToggle: true,
     flashMessages: []
   };
+  console.log("Main");
 
   function appReducer(draft, action) {
     switch (action.type) {
@@ -41,6 +43,9 @@ function Main() {
         break;
       case ACTION.flashMessage:
         draft.flashMessages.push(action.value);
+        break;
+      case ACTION.toggle:
+        draft.renderToggle = !draft.renderToggle;
         break;
     }
   }
@@ -87,7 +92,14 @@ function Main() {
                   }
                 />
                 <Route path="/login" element={<Login />} />
-                <Route path="/home" element={<Home />} />
+                <Route
+                  path="/home"
+                  element={
+                    <ProtectedRoute authorisedGroup="">
+                      <Home />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="/profile"
                   element={

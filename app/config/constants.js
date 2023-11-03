@@ -19,7 +19,8 @@ export const ADMIN_API = {
   getAllUsers: `${ADMIN_API_BASE}/user/all`,
   getAllGroups: `${ADMIN_API_BASE}/group/all`,
   createGroup: `${ADMIN_API_BASE}/group`,
-  editUser: username => `${ADMIN_API_BASE}/user/${username}`
+  createUser: `${ADMIN_API_BASE}/user`,
+  user: username => `${ADMIN_API_BASE}/user/${username}`
 };
 
 // =================== DISPATCH ACTIONS ==================
@@ -32,9 +33,13 @@ export const ACTION = {
 
   // User management
   populateUsers: "populateUsers",
+  createUser: "createUser",
   editUser: "editUser",
   populateGroups: "populateGroups",
-  createGroup: "createGroup"
+  createGroup: "createGroup",
+
+  // Protected route
+  toggle: "toggle"
 };
 
 export const HTTP_CODES = {

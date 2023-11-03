@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import Axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 // Custom modules
 import Page from "../Page";
@@ -9,17 +10,28 @@ import { ADMIN_API, ACTION } from "../../config/constants";
 import LoadingDotsIcon from "../LoadingDotsIcon";
 
 // Context
+import DispatchContext from "../../DispatchContext";
 import UserManagementStateContext from "./UserManagementStateContext";
 import UserManagementDispatchContext from "./UserManagementDispatchContext";
 import CreateUser from "./CreateUser";
+import FlashMessages from "../FlashMessages";
 
 function UserManagement() {
   const [isLoading, setIsLoading] = useState(true);
+  const appDispatch = useContext(DispatchContext);
+  const navigate = useNavigate();
 
   function userMgmtReducer(draft, action) {
     switch (action.type) {
       case ACTION.populateUsers:
         draft.users = action.value;
+        break;
+      case ACTION.createUser:
+        const newUser = action.value;
+        newUser.is_active = newUser.isActive === "active" ? 1 : 0;
+        delete newUser.isActive;
+        delete newUser.password;
+        draft.users.push(newUser);
         break;
       case ACTION.editUser:
         const user = draft.users.find(
@@ -57,9 +69,18 @@ function UserManagement() {
 
   useEffect(() => {
     async function fetchAllUsers() {
-      const allUsersResponse = await Axios.get(ADMIN_API.getAllUsers);
-      const userGroupsResponse = await Axios.get(ADMIN_API.getAllGroups);
-
+      console.log("Fetching Users");
+      try {
+        console.log("Getting users and groups");
+        var allUsersResponse = await Axios.get(ADMIN_API.getAllUsers);
+        var userGroupsResponse = await Axios.get(ADMIN_API.getAllGroups);
+        console.log("Responses", allUsersResponse, userGroupsResponse);
+      } catch (error) {
+        console.log(error);
+        navigate("/");
+        appDispatch({ type: ACTION.flashMessage, value: "There was an error" });
+        return;
+      }
       // Get groups
       dispatch({
         type: ACTION.populateGroups,
@@ -70,12 +91,10 @@ function UserManagement() {
       dispatch({
         type: ACTION.populateUsers,
         value: allUsersResponse.data.users.map(userData => {
-          const groups = userData.groups.split("/");
-          const user = { ...userData, groups };
-          if (user.groups[0] === "") {
-            delete user.groups;
+          const user = { ...userData };
+          if (userData.groups) {
+            user.groups = userData.groups.split("/");
           }
-          console.log(user);
           return user;
         })
       });
