@@ -129,7 +129,6 @@ function Profile() {
                 name="email"
                 className="form-control"
                 placeholder="Email"
-                defaultValue={user.email}
                 value={email}
               />
             </div>

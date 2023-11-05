@@ -49,6 +49,7 @@ function CreateUser() {
   async function handleCreateUser() {
     const user = {};
 
+    setUsername(username.trim());
     user.username = username;
     user.password = password;
 
@@ -105,7 +106,7 @@ function CreateUser() {
     try {
       await Axios.post(
         ADMIN_API.createGroup,
-        { groupName: option },
+        { groupName: option.trim() },
         {
           headers: {
             "Content-Type": "application/json"
@@ -132,7 +133,7 @@ function CreateUser() {
     }
   }
 
-  // Debounce checks if
+  // ======================= Use effects =======================
   // Checks if they user can submit changes
   let enableSubmitDebounce;
   useEffect(() => {
@@ -146,35 +147,30 @@ function CreateUser() {
     return () => clearTimeout(enableSubmitDebounce);
   }, [username, usernameError, password, passwordError]);
 
+  // Checks if they username is taken
   let usernameValidDebounce;
   useEffect(() => {
     setCanSubmit(false);
     async function checkUsername() {
       console.log("Checking create user username");
-      const alphanumericRegex = /^[a-zA-Z0-9]*$/; // Regex for alphanumeric characters
-
-      if (!alphanumericRegex.test(username)) {
-        console.log("failed");
-        setUsernameError(
-          "Username should only contain alphanumeric characters"
-        );
-      } else {
-        try {
-          const response = await Axios.get(ADMIN_API.user(username));
-          console.log(response);
-          setUsernameError("Username taken");
-        } catch (error) {
-          if (
-            error instanceof AxiosError &&
-            error.response.status === HTTP_CODES.notFound
-          ) {
-            console.log(`Username: <${username}> can be used`);
-            setUsernameError("");
-          } else {
-            console.log(error);
-          }
+      try {
+        setUsername(username.trim());
+        console.log(username, ADMIN_API.user(username));
+        const response = await Axios.get(ADMIN_API.user(username));
+        console.log(response);
+        setUsernameError("Username taken");
+      } catch (error) {
+        if (
+          error instanceof AxiosError &&
+          error.response.status === HTTP_CODES.notFound
+        ) {
+          console.log(`Username: <${username}> can be used`);
+          setUsernameError("");
+        } else {
+          console.log(error);
         }
       }
+      // }
     }
 
     usernameValidDebounce = setTimeout(() => {
@@ -197,7 +193,7 @@ function CreateUser() {
 
   return (
     <tr key={0}>
-      <td>
+      <td style={{ maxWidth: "250px" }}>
         <input
           className="form-control"
           value={username}

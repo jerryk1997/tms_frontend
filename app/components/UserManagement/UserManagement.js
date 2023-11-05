@@ -14,7 +14,6 @@ import DispatchContext from "../../DispatchContext";
 import UserManagementStateContext from "./UserManagementStateContext";
 import UserManagementDispatchContext from "./UserManagementDispatchContext";
 import CreateUser from "./CreateUser";
-import FlashMessages from "../FlashMessages";
 
 function UserManagement() {
   const [isLoading, setIsLoading] = useState(true);

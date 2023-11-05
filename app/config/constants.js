@@ -8,7 +8,7 @@ export const AUTH_API = {
   login: `${AUTH_API_BASE}/login`,
   logout: `${AUTH_API_BASE}/logout`,
   verifySession: `${AUTH_API_BASE}/verify-session`,
-  verifyGroup: group => `${AUTH_API_BASE}/verify/${group}`
+  verifyGroup: group => `${AUTH_API_BASE}/verify/${encodeURIComponent(group)}`
 };
 
 export const USER_API = {
@@ -20,7 +20,7 @@ export const ADMIN_API = {
   getAllGroups: `${ADMIN_API_BASE}/group/all`,
   createGroup: `${ADMIN_API_BASE}/group`,
   createUser: `${ADMIN_API_BASE}/user`,
-  user: username => `${ADMIN_API_BASE}/user/${username}`
+  user: username => `${ADMIN_API_BASE}/user/${encodeURIComponent(username)}`
 };
 
 // =================== DISPATCH ACTIONS ==================

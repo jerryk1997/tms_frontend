@@ -29,8 +29,8 @@ function EditUser({ user, index }) {
   const [password, setPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
 
-  const [selectedGroupOptions, setSelectedGroups] = useState([]);
-  const [selectedStatusOption, setSelectedStatus] = useState();
+  const [selectedGroupOptions, setSelectedGroupOptions] = useState([]);
+  const [selectedStatusOption, setSelectedStatusOption] = useState();
 
   const [canSubmit, setCanSubmit] = useState(false);
 
@@ -46,7 +46,7 @@ function EditUser({ user, index }) {
 
   async function handleConfirm() {
     const editedFields = {};
-    // ============= Construct request body =============
+    // Construct request body
     if (email !== user.email) {
       editedFields.email = email;
     }
@@ -124,11 +124,11 @@ function EditUser({ user, index }) {
   };
 
   function handleGroupChange(selectedGroups) {
-    setSelectedGroups(selectedGroups);
+    setSelectedGroupOptions(selectedGroups);
   }
 
   function handleStatusChange(selectedStatus) {
-    setSelectedStatus(selectedStatus);
+    setSelectedStatusOption(selectedStatus);
   }
 
   async function handleCreateOption(option) {
@@ -142,7 +142,7 @@ function EditUser({ user, index }) {
           }
         }
       );
-      setSelectedGroups(prev =>
+      setSelectedGroupOptions(prev =>
         prev.concat({
           label: option,
           value: option
@@ -166,7 +166,7 @@ function EditUser({ user, index }) {
   useEffect(() => {
     setEmail(user.email || "");
     if (user.groups) {
-      setSelectedGroups(
+      setSelectedGroupOptions(
         user.groups.map(group => {
           return {
             label: group,
@@ -175,7 +175,7 @@ function EditUser({ user, index }) {
         })
       );
     }
-    setSelectedStatus(
+    setSelectedStatusOption(
       user.is_active ? userStatusOptions[0] : userStatusOptions[1]
     );
   }, []);
@@ -183,25 +183,34 @@ function EditUser({ user, index }) {
   // Checks if they user can submit changes
   let enableSubmitDebounce;
   useEffect(() => {
+    setCanSubmit(false);
     enableSubmitDebounce = setTimeout(() => {
+      console.log(`Checking for ${user.username}`);
       const validNonEmptyPassword = password !== "" && passwordError === "";
-      const emailChanged = email !== user.email;
+      const emailChanged = !(
+        (email === "" && user.email === null) ||
+        email === user.email
+      );
 
       let selectedGroups;
       if (selectedGroupOptions) {
         selectedGroups = selectedGroupOptions.map(group => group.value);
       }
 
+      console.log(selectedGroups, user.groups);
+
       const groupsUnchanged =
-        (!selectedGroups && !user.groups) ||
-        (selectedGroups &&
+        (selectedGroups.length === 0 && !user.groups) ||
+        (selectedGroups.length > 0 &&
           user.groups &&
           selectedGroups.every(group => user.groups.includes(group)) &&
           user.groups.every(group => selectedGroups.includes(group)));
 
       const statusChanged =
         selectedStatusOption.value !== (user.is_active ? "active" : "disabled");
-
+      console.log(`${validNonEmptyPassword} ||
+      (${passwordError === ""} &&
+        (${emailChanged} || ${!groupsUnchanged} || ${statusChanged}))`);
       setCanSubmit(
         validNonEmptyPassword ||
           (passwordError === "" &&

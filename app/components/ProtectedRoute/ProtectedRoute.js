@@ -46,12 +46,8 @@ function ProtectedRoute(props) {
         // ============= Check group if needed =============
         if (props.authorisedGroup !== "") {
           console.log(`<${props.authorisedGroup}> Checking group`);
-          const sanitisedAuthorisedGroup = encodeURIComponent(
-            props.authorisedGroup
-          );
-          console.log(AUTH_API.verifyGroup(sanitisedAuthorisedGroup));
           try {
-            await Axios.get(AUTH_API.verifyGroup(sanitisedAuthorisedGroup));
+            await Axios.get(AUTH_API.verifyGroup(props.authorisedGroup));
             console.log(`<${props.authorisedGroup}> Authorised`);
 
             // Authorised, setting page content
