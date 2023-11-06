@@ -24,7 +24,6 @@ function Main() {
   const [isLoading, setIsLoading] = useState(true);
   const initialState = {
     loggedIn: false,
-    username: null,
     renderToggle: true,
     flashMessages: []
   };
@@ -34,11 +33,9 @@ function Main() {
     switch (action.type) {
       case "login":
         draft.loggedIn = true;
-        draft.username = action.value;
         break;
       case "logout":
         draft.loggedIn = false;
-        draft.username = null;
         break;
       case "flash message":
         draft.flashMessages.push(action.value);
@@ -55,14 +52,15 @@ function Main() {
   useEffect(() => {
     async function checkLogin() {
       try {
-        const response = await Axios.get("/user/profile");
+        const response = await Axios.get("/auth/verify-session");
+        console.log(response);
         if (response.status === 200) {
           dispatch({
-            type: "login",
-            value: response.data.user[0].username
+            type: "login"
           });
         }
       } catch (error) {
+        console.log(error);
         if (error.response.status === 401) {
         } else {
           throw new Error(error);

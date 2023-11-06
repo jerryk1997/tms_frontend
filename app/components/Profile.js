@@ -77,9 +77,9 @@ function Profile() {
 
       setUser({
         username: user.username,
-        email: user.email
+        email: user.email || ""
       });
-      setEmail(user.email);
+      setEmail(user.email || "");
 
       setIsLoading(false);
     }
@@ -118,6 +118,7 @@ function Profile() {
               />
             </div>
 
+            {/* ==================== Email Input ===================== */}
             <div className="form-group">
               <label htmlFor="email-change" className="text-muted mb-1">
                 Email

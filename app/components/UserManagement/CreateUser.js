@@ -67,6 +67,7 @@ function CreateUser() {
           "Content-Type": "application/json"
         }
       });
+
       userMgmtDispatch({ type: "create user", value: user });
       appDispatch({
         type: "flash message",
@@ -79,12 +80,16 @@ function CreateUser() {
       setSelectedGroups([]);
       setSelectedStatus(userStatusOptions[0]);
     } catch (error) {
-      appDispatch({
-        type: "flash message",
-        value: "Failed to create user"
-      });
-      if (error instanceof AxiosError && error.response.status === 401) {
-        checkDispatch({ type: "toggle" });
+      if (error instanceof AxiosError && error.response.status === 409) {
+        setUsernameError("Username is taken");
+      } else {
+        appDispatch({
+          type: "flash message",
+          value: "Failed to create user"
+        });
+        if (error instanceof AxiosError && error.response.status === 401) {
+          checkDispatch({ type: "toggle" });
+        }
       }
     }
   }
@@ -132,6 +137,7 @@ function CreateUser() {
   // Checks if they user can submit changes
   let enableSubmitDebounce;
   useEffect(() => {
+    setUsernameError("");
     enableSubmitDebounce = setTimeout(() => {
       const validNonEmptyPassword = password !== "" && passwordError === "";
       const validNonEmptyUsername = username !== "" && usernameError === "";
@@ -140,37 +146,7 @@ function CreateUser() {
     }, 600); // Longer delay to allow passwordError to disable button
 
     return () => clearTimeout(enableSubmitDebounce);
-  }, [username, usernameError, password, passwordError]);
-
-  // Checks if they username is taken
-  let usernameValidDebounce;
-  useEffect(() => {
-    setCanSubmit(false);
-    async function checkUsername() {
-      console.log("Checking create user username");
-      try {
-        const URLSafeUsername = encodeURIComponent(username);
-        const response = await Axios.get(`/admin/user/${URLSafeUsername}`);
-
-        console.log(response);
-        setUsernameError("Username taken");
-      } catch (error) {
-        if (error instanceof AxiosError && error.response.status === 404) {
-          console.log(`Username: <${username}> can be used`);
-          setUsernameError("");
-        } else {
-          console.log(error);
-        }
-      }
-      // }
-    }
-
-    usernameValidDebounce = setTimeout(() => {
-      checkUsername();
-    }, 500);
-
-    return () => clearTimeout(usernameValidDebounce);
-  }, [username]);
+  }, [username, password, passwordError]);
 
   useEffect(() => {
     setGroupOptions(
