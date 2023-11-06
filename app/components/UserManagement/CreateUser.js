@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import Select from "react-select";
 import CreatableSelect from "react-select/creatable";
 import Axios, { AxiosError } from "axios";
@@ -22,6 +22,7 @@ function CreateUser() {
 
   // ======================= Row state =======================
   const [groupOptions, setGroupOptions] = useState();
+  const createUserButtonRef = useRef();
 
   const [username, setUsername] = useState("");
   const [usernameError, setUsernameError] = useState("");
@@ -82,6 +83,7 @@ function CreateUser() {
     } catch (error) {
       if (error instanceof AxiosError && error.response.status === 409) {
         setUsernameError("Username is taken");
+        createUserButtonRef.current.blur();
       } else {
         appDispatch({
           type: "flash message",
@@ -137,7 +139,6 @@ function CreateUser() {
   // Checks if they user can submit changes
   let enableSubmitDebounce;
   useEffect(() => {
-    setUsernameError("");
     enableSubmitDebounce = setTimeout(() => {
       const validNonEmptyPassword = password !== "" && passwordError === "";
       const validNonEmptyUsername = username !== "" && usernameError === "";
@@ -148,6 +149,9 @@ function CreateUser() {
     return () => clearTimeout(enableSubmitDebounce);
   }, [username, password, passwordError]);
 
+  useEffect(() => {
+    setUsernameError("");
+  }, [username]);
   useEffect(() => {
     setGroupOptions(
       userMgmtState.groups.map(group => {
@@ -222,6 +226,7 @@ function CreateUser() {
         }}
       >
         <button
+          ref={createUserButtonRef}
           type="button"
           className="btn btn-success btn-sm"
           onClick={handleCreateUser}
