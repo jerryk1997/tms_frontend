@@ -4,8 +4,6 @@ import CreatableSelect from "react-select/creatable";
 import Axios, { AxiosError } from "axios";
 
 // Custom modules
-import { ACTION, ADMIN_API, HTTP_CODES } from "../../config/constants";
-
 // Context
 import DispatchContext from "../../DispatchContext";
 import UserManagementStateContext from "./UserManagementStateContext";
@@ -78,7 +76,8 @@ function EditUser({ user, index }) {
 
     // ============= Send request =============
     try {
-      await Axios.put(ADMIN_API.user(user.username), editedFields, {
+      const URLSafeUsername = encodeURIComponent(user.username);
+      await Axios.put(`/admin/user/${URLSafeUsername}`, editedFields, {
         headers: {
           "Content-Type": "application/json"
         }
@@ -88,7 +87,7 @@ function EditUser({ user, index }) {
 
       // Update page state
       userMgmtDispatch({
-        type: ACTION.editUser,
+        type: "edit user",
         value: {
           username: user.username,
           editedFields
@@ -96,22 +95,19 @@ function EditUser({ user, index }) {
       });
       // Flash message
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Successfully edited user"
       });
     } catch (error) {
-      if (
-        error instanceof AxiosError &&
-        error.response.status === HTTP_CODES.unauthorised
-      ) {
+      if (error instanceof AxiosError && error.response.status === 401) {
         appDispatch({
-          type: ACTION.flashMessage,
+          type: "flash message",
           value: "Failed to edit user"
         });
-        checkDispatch({ type: ACTION.toggle });
+        checkDispatch({ type: "toggle" });
       } else {
         appDispatch({
-          type: ACTION.flashMessage,
+          type: "flash message",
           value: "There was an error"
         });
       }
@@ -134,7 +130,7 @@ function EditUser({ user, index }) {
   async function handleCreateOption(option) {
     try {
       await Axios.post(
-        ADMIN_API.createGroup,
+        "/admin/group",
         { groupName: option },
         {
           headers: {
@@ -148,15 +144,15 @@ function EditUser({ user, index }) {
           value: option
         })
       );
-      userMgmtDispatch({ type: ACTION.createGroup, value: option });
+      userMgmtDispatch({ type: "create group", value: option });
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Successfully created group"
       });
     } catch (error) {
       console.log(error);
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Failed to create group"
       });
     }

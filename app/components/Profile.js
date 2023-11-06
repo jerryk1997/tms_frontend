@@ -4,7 +4,6 @@ import Axios from "axios";
 
 //Custom Modules
 import Page from "./Page";
-import { ACTION, HTTP_CODES, USER_API } from "../config/constants";
 import DispatchContext from "../DispatchContext";
 import PasswordChangeInput from "./PasswordChangeInput";
 import LoadingDotsIcon from "./LoadingDotsIcon";
@@ -34,15 +33,15 @@ function Profile() {
     }
 
     try {
-      const response = await Axios.put(USER_API.currentUser, body, {
+      const response = await Axios.put("/user/profile", body, {
         headers: {
           "Content-Type": "application/json"
         }
       });
       console.log(response);
-      if (response.status === HTTP_CODES.success) {
+      if (response.status === 200) {
         appDispatch({
-          type: ACTION.flashMessage,
+          type: "flash message",
           value: "Successfully edited profile"
         });
         setPassword("");
@@ -50,7 +49,7 @@ function Profile() {
       }
     } catch (error) {
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Edit failed, please contact administrator"
       });
     }
@@ -72,7 +71,7 @@ function Profile() {
 
   useEffect(() => {
     async function fetchCurrentUser() {
-      const response = await Axios.get(USER_API.currentUser);
+      const response = await Axios.get("/user/profile");
       const user = response.data.user[0];
       console.log(user);
 

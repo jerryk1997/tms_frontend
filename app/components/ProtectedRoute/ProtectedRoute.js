@@ -3,7 +3,6 @@ import Axios, { AxiosError } from "axios";
 import { useImmerReducer } from "use-immer";
 
 // Custome modules
-import { ACTION, AUTH_API, HTTP_CODES } from "../../config/constants";
 import LoadingDotsIcon from "../LoadingDotsIcon";
 import NotFound from "../NotFound";
 import DispatchCheckContext from "./DispatchCheckContext";
@@ -24,7 +23,7 @@ function ProtectedRoute(props) {
 
   function toggleReducer(draft, action) {
     switch (action.type) {
-      case ACTION.toggle:
+      case "toggle":
         draft.state = !draft.state;
         break;
     }
@@ -40,14 +39,16 @@ function ProtectedRoute(props) {
         // ============= Check user logged in =============
         console.log(`Checking <${props.authorisedGroup}>`, props.children);
         console.log(`<${props.authorisedGroup}> Checking session`);
-        await Axios.get(AUTH_API.verifySession);
+        await Axios.get("/auth/verify-session");
         console.log(`<${props.authorisedGroup}> session verified`);
 
         // ============= Check group if needed =============
         if (props.authorisedGroup !== "") {
           console.log(`<${props.authorisedGroup}> Checking group`);
           try {
-            await Axios.get(AUTH_API.verifyGroup(props.authorisedGroup));
+            const URLSafeGroupName = encodeURIComponent(props.authorisedGroup);
+            await Axios.get(`/auth/verify/${URLSafeGroupName}`);
+
             console.log(`<${props.authorisedGroup}> Authorised`);
 
             // Authorised, setting page content
@@ -57,10 +58,7 @@ function ProtectedRoute(props) {
               </DispatchCheckContext.Provider>
             );
           } catch (error) {
-            if (
-              error instanceof AxiosError &&
-              error.response.status === HTTP_CODES.unauthorised
-            ) {
+            if (error instanceof AxiosError && error.response.status === 401) {
               // Unauthorised, setting page not found
               setRenderContent(<NotFound />);
               console.log(`<${props.authorisedGroup}> Unauthorised`);
@@ -71,7 +69,7 @@ function ProtectedRoute(props) {
           setRenderContent(props.children);
         }
       } catch (error) {
-        appDispatch({ type: ACTION.logout });
+        appDispatch({ type: "logout" });
         setRenderContent(<NotFound />);
         console.error("Page not found");
       }

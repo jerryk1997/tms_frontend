@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import Axios from "axios";
 
 //Custom Modules
-import { AUTH_API, ACTION } from "../config/constants";
 import DispatchContext from "../DispatchContext";
 import Page from "./Page";
 
@@ -16,18 +15,18 @@ function Login() {
   async function handleLogin(e) {
     e.preventDefault();
     try {
-      const response = await Axios.post(AUTH_API.login, { username, password });
+      const response = await Axios.post("/auth/login", { username, password });
       console.log("Successful login");
 
-      appDispatch({ type: ACTION.login, value: username });
-      appDispatch({ type: ACTION.flashMessage, value: "Log in successful" });
+      appDispatch({ type: "login", value: username });
+      appDispatch({ type: "flash message", value: "Log in successful" });
 
       navigate("/home");
     } catch (error) {
       console.log("Error logging in");
 
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Username or password is incorrect"
       });
     }

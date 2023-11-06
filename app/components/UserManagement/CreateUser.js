@@ -5,8 +5,6 @@ import Axios, { AxiosError } from "axios";
 import { useNavigate } from "react-router-dom";
 
 // Custom modules
-import { ACTION, ADMIN_API, HTTP_CODES } from "../../config/constants";
-
 // Context
 import DispatchContext from "../../DispatchContext";
 import UserManagementStateContext from "./UserManagementStateContext";
@@ -64,14 +62,14 @@ function CreateUser() {
     user.isActive = selectedStatusOption.value;
 
     try {
-      await Axios.post(ADMIN_API.createUser, user, {
+      await Axios.post("/admin/user", user, {
         headers: {
           "Content-Type": "application/json"
         }
       });
-      userMgmtDispatch({ type: ACTION.createUser, value: user });
+      userMgmtDispatch({ type: "create user", value: user });
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Successfully created user"
       });
 
@@ -82,14 +80,11 @@ function CreateUser() {
       setSelectedStatus(userStatusOptions[0]);
     } catch (error) {
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Failed to create user"
       });
-      if (
-        error instanceof AxiosError &&
-        error.response.status === HTTP_CODES.unauthorised
-      ) {
-        checkDispatch({ type: ACTION.toggle });
+      if (error instanceof AxiosError && error.response.status === 401) {
+        checkDispatch({ type: "toggle" });
       }
     }
   }
@@ -105,7 +100,7 @@ function CreateUser() {
   async function handleCreateOption(option) {
     try {
       await Axios.post(
-        ADMIN_API.createGroup,
+        "/admin/group",
         { groupName: option.trim() },
         {
           headers: {
@@ -119,15 +114,15 @@ function CreateUser() {
           value: option
         })
       );
-      userMgmtDispatch({ type: ACTION.createGroup, value: option });
+      userMgmtDispatch({ type: "create group", value: option });
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Successfully created group"
       });
     } catch (error) {
       console.log(error);
       appDispatch({
-        type: ACTION.flashMessage,
+        type: "flash message",
         value: "Failed to create group"
       });
     }
@@ -154,16 +149,13 @@ function CreateUser() {
     async function checkUsername() {
       console.log("Checking create user username");
       try {
-        setUsername(username.trim());
-        console.log(username, ADMIN_API.user(username));
-        const response = await Axios.get(ADMIN_API.user(username));
+        const URLSafeUsername = encodeURIComponent(username);
+        const response = await Axios.get(`/admin/user/${URLSafeUsername}`);
+
         console.log(response);
         setUsernameError("Username taken");
       } catch (error) {
-        if (
-          error instanceof AxiosError &&
-          error.response.status === HTTP_CODES.notFound
-        ) {
+        if (error instanceof AxiosError && error.response.status === 404) {
           console.log(`Username: <${username}> can be used`);
           setUsernameError("");
         } else {

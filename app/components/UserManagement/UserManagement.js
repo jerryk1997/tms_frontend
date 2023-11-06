@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 import Page from "../Page";
 import EditUser from "./EditUser";
 import { useImmerReducer } from "use-immer";
-import { ADMIN_API, ACTION } from "../../config/constants";
 import LoadingDotsIcon from "../LoadingDotsIcon";
 
 // Context
@@ -22,17 +21,17 @@ function UserManagement() {
 
   function userMgmtReducer(draft, action) {
     switch (action.type) {
-      case ACTION.populateUsers:
+      case "populate users":
         draft.users = action.value;
         break;
-      case ACTION.createUser:
+      case "create user":
         const newUser = action.value;
         newUser.is_active = newUser.isActive === "active" ? 1 : 0;
         delete newUser.isActive;
         delete newUser.password;
         draft.users.push(newUser);
         break;
-      case ACTION.editUser:
+      case "edit user":
         const user = draft.users.find(
           user => user.username === action.value.username
         );
@@ -52,10 +51,10 @@ function UserManagement() {
           user.is_active = editedFields.isActive === "active" ? 1 : 0;
         }
         break;
-      case ACTION.populateGroups:
+      case "populate groups":
         draft.groups = action.value;
         break;
-      case ACTION.createGroup:
+      case "create group":
         draft.groups = draft.groups.concat(action.value);
         break;
     }
@@ -71,24 +70,24 @@ function UserManagement() {
       console.log("Fetching Users");
       try {
         console.log("Getting users and groups");
-        var allUsersResponse = await Axios.get(ADMIN_API.getAllUsers);
-        var userGroupsResponse = await Axios.get(ADMIN_API.getAllGroups);
+        var allUsersResponse = await Axios.get("/admin/user/all");
+        var userGroupsResponse = await Axios.get("/admin/group/all");
         console.log("Responses", allUsersResponse, userGroupsResponse);
       } catch (error) {
         console.log(error);
         navigate("/");
-        appDispatch({ type: ACTION.flashMessage, value: "There was an error" });
+        appDispatch({ type: "flash message", value: "There was an error" });
         return;
       }
       // Get groups
       dispatch({
-        type: ACTION.populateGroups,
+        type: "populate groups",
         value: userGroupsResponse.data.groups
       });
 
       // Get users
       dispatch({
-        type: ACTION.populateUsers,
+        type: "populate users",
         value: allUsersResponse.data.users.map(userData => {
           const user = { ...userData };
           if (userData.groups) {

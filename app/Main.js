@@ -12,13 +12,12 @@ import Profile from "./components/Profile";
 import StateContext from "./StateContext";
 import DispatchContext from "./DispatchContext";
 import FlashMessages from "./components/FlashMessages";
-import { ACTION, HTTP_CODES, USER_API } from "./config/constants";
 import NotFound from "./components/NotFound";
 import LoadingDotsIcon from "./components/LoadingDotsIcon";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import UserManagement from "./components/UserManagement/UserManagement";
 
-Axios.defaults.baseURL = "http://localhost:8080";
+Axios.defaults.baseURL = "http://localhost:8080/api/v1";
 Axios.defaults.withCredentials = true;
 
 function Main() {
@@ -33,18 +32,18 @@ function Main() {
 
   function appReducer(draft, action) {
     switch (action.type) {
-      case ACTION.login:
+      case "login":
         draft.loggedIn = true;
         draft.username = action.value;
         break;
-      case ACTION.logout:
+      case "logout":
         draft.loggedIn = false;
         draft.username = null;
         break;
-      case ACTION.flashMessage:
+      case "flash message":
         draft.flashMessages.push(action.value);
         break;
-      case ACTION.toggle:
+      case "toggle":
         draft.renderToggle = !draft.renderToggle;
         break;
     }
@@ -56,15 +55,15 @@ function Main() {
   useEffect(() => {
     async function checkLogin() {
       try {
-        const response = await Axios.get(USER_API.currentUser);
-        if (response.status === HTTP_CODES.success) {
+        const response = await Axios.get("/user/profile");
+        if (response.status === 200) {
           dispatch({
-            type: ACTION.login,
+            type: "login",
             value: response.data.user[0].username
           });
         }
       } catch (error) {
-        if (error.response.status === HTTP_CODES.unauthorised) {
+        if (error.response.status === 401) {
         } else {
           throw new Error(error);
         }

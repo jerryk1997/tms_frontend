@@ -12,7 +12,6 @@ import Axios from "axios";
 // Custom modules
 import StateContext from "../StateContext";
 import DispatchContext from "../DispatchContext";
-import { ACTION, AUTH_API } from "../config/constants";
 
 function Header() {
   const appState = useContext(StateContext);
@@ -22,9 +21,9 @@ function Header() {
   const [displayUserManagement, setDisplayUserManagement] = useState(false);
 
   async function handleLogout() {
-    await Axios.get(AUTH_API.logout);
-    appDispatch({ type: ACTION.logout });
-    appDispatch({ type: ACTION.flashMessage, value: "Logout successful" });
+    await Axios.get("/auth/logout");
+    appDispatch({ type: "logout" });
+    appDispatch({ type: "flash message", value: "Logout successful" });
     navigate("/");
   }
 
@@ -32,7 +31,7 @@ function Header() {
     async function checkAdmin() {
       if (appState.loggedIn) {
         try {
-          await Axios.get(AUTH_API.verifyGroup("admin"));
+          await Axios.get("/auth/verify/admin");
           setDisplayUserManagement(true);
         } catch (error) {
           setDisplayUserManagement(false);
