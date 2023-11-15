@@ -39,8 +39,8 @@ function UserManagement() {
 
         user.email = editedFields.email || user.email;
 
-        if (user.groups) {
-          if (user.groups.length === 0) {
+        if (editedFields.groups) {
+          if (editedFields.groups.length === 0) {
             delete user.groups;
           } else {
             user.groups = editedFields.groups;
@@ -66,8 +66,8 @@ function UserManagement() {
   });
 
   useEffect(() => {
-    async function fetchAllUsers() {
-      console.log("Fetching Users");
+    async function initialiseState() {
+      console.log("=== Initialising State for User Management");
       try {
         console.log("Getting users and groups");
         var allUsersResponse = await Axios.get("/admin/user/all");
@@ -100,7 +100,7 @@ function UserManagement() {
       setIsLoading(false);
     }
 
-    fetchAllUsers();
+    initialiseState();
   }, []);
 
   return (

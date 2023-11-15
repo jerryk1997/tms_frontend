@@ -21,7 +21,7 @@ function Login() {
       appDispatch({ type: "login", value: username });
       appDispatch({ type: "flash message", value: "Log in successful" });
 
-      navigate("/home");
+      navigate("/applications");
     } catch (error) {
       console.log("Error logging in");
 

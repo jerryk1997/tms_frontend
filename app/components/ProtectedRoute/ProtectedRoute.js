@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Axios, { AxiosError } from "axios";
 import { useImmerReducer } from "use-immer";
+import { Outlet } from "react-router-dom";
 
 // Custome modules
 import LoadingDotsIcon from "../LoadingDotsIcon";
@@ -54,7 +55,7 @@ function ProtectedRoute(props) {
             // Authorised, setting page content
             setRenderContent(
               <DispatchCheckContext.Provider value={toggleDispatch}>
-                {props.children}
+                <Outlet />
               </DispatchCheckContext.Provider>
             );
           } catch (error) {
@@ -66,7 +67,7 @@ function ProtectedRoute(props) {
           }
         } else {
           console.log(`<${props.authorisedGroup}> Authorised`);
-          setRenderContent(props.children);
+          setRenderContent(<Outlet />);
         }
       } catch (error) {
         appDispatch({ type: "logout" });

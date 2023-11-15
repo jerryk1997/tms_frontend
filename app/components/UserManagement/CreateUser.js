@@ -149,9 +149,11 @@ function CreateUser() {
     return () => clearTimeout(enableSubmitDebounce);
   }, [username, password, passwordError]);
 
+  // Clear error after username changes again
   useEffect(() => {
     setUsernameError("");
   }, [username]);
+
   useEffect(() => {
     setGroupOptions(
       userMgmtState.groups.map(group => {

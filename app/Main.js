@@ -16,6 +16,7 @@ import NotFound from "./components/NotFound";
 import LoadingDotsIcon from "./components/LoadingDotsIcon";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import UserManagement from "./components/UserManagement/UserManagement";
+import Applications from "./components/Applications/Applications";
 
 Axios.defaults.baseURL = "http://localhost:8080/api/v1";
 Axios.defaults.withCredentials = true;
@@ -85,34 +86,24 @@ function Main() {
                 <Route
                   path="/"
                   element={
-                    <Navigate to={state.loggedIn ? "/home" : "/login"} />
+                    <Navigate
+                      to={state.loggedIn ? "/applications" : "/login"}
+                    />
                   }
                 />
                 <Route path="/login" element={<Login />} />
-                <Route
-                  path="/home"
-                  element={
-                    <ProtectedRoute authorisedGroup="">
-                      <Home />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
-                  element={
-                    <ProtectedRoute authorisedGroup="">
-                      <Profile />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/user-management"
-                  element={
-                    <ProtectedRoute authorisedGroup="admin">
-                      <UserManagement />
-                    </ProtectedRoute>
-                  }
-                />
+
+                {/* ================== User routes ==================*/}
+                <Route element={<ProtectedRoute authorisedGroup="" />}>
+                  <Route path="/home" element={<Home />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/applications" element={<Applications />} />
+                </Route>
+
+                {/* ================== Admin routes ==================*/}
+                <Route element={<ProtectedRoute authorisedGroup="admin" />}>
+                  <Route path="/user-management" element={<UserManagement />} />
+                </Route>
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </BrowserRouter>
