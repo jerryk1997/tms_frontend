@@ -67,7 +67,11 @@ function ProtectedRoute(props) {
           }
         } else {
           console.log(`<${props.authorisedGroup}> Authorised`);
-          setRenderContent(<Outlet />);
+          setRenderContent(
+            <DispatchCheckContext.Provider value={toggleDispatch}>
+              <Outlet />
+            </DispatchCheckContext.Provider>
+          );
         }
       } catch (error) {
         appDispatch({ type: "logout" });

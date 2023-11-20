@@ -17,6 +17,7 @@ import LoadingDotsIcon from "./components/LoadingDotsIcon";
 import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import UserManagement from "./components/UserManagement/UserManagement";
 import Applications from "./components/Applications/Applications";
+import PlanManagement from "./components/PlanManagement/PlanManagement";
 
 Axios.defaults.baseURL = "http://localhost:8080/api/v1";
 Axios.defaults.withCredentials = true;
@@ -39,6 +40,7 @@ function Main() {
         draft.loggedIn = false;
         break;
       case "flash message":
+        console.log("Flashing", action.value);
         draft.flashMessages.push(action.value);
         break;
       case "toggle":
@@ -98,6 +100,11 @@ function Main() {
                   <Route path="/home" element={<Home />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/applications" element={<Applications />} />
+                  <Route path="/kanban/:appAcronym" element={<></>} />
+                  <Route
+                    path="/kanban/:appAcronym/plans/"
+                    element={<PlanManagement />}
+                  />
                 </Route>
 
                 {/* ================== Admin routes ==================*/}

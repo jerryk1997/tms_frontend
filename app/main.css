@@ -439,8 +439,8 @@ textarea.tall-textarea {
 
 .floating-alert {
   display: none;
-  position: absolute;
-  z-index: 999;
+  position: fixed;
+  z-index: 999999999999999;
   top: 38px;
   left: 50%;
   transform: translateX(-50%);

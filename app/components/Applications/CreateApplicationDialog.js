@@ -15,7 +15,8 @@ import {
   InputLabel,
   MenuItem,
   FormControl,
-  FormHelperText
+  FormHelperText,
+  TextareaAutosize
 } from "@mui/material";
 
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -31,6 +32,8 @@ function CreateApplicationDialog({ open, setOpen }) {
   const appDispatch = useContext(DispatchContext);
   const navigate = useNavigate();
 
+  const [acronymHelpText, setAcronymHelpText] = useState("Required");
+
   const mandatoryFieldKeys = [
     "acronym",
     "rNum",
@@ -45,7 +48,7 @@ function CreateApplicationDialog({ open, setOpen }) {
 
   const [mandatoryFields, setMandatoryFields] = useImmer({
     acronym: "",
-    rNum: "",
+    rNum: NaN,
     startDate: "",
     endDate: "",
     createPerm: "",
@@ -87,6 +90,9 @@ function CreateApplicationDialog({ open, setOpen }) {
       setErrors(draft => {
         draft[fieldKey] = false;
       });
+
+      // Reset acronym help text to base
+      setAcronymHelpText("Required");
     }
   }
 
@@ -143,6 +149,16 @@ function CreateApplicationDialog({ open, setOpen }) {
     } catch (error) {
       if (error instanceof AxiosError && error.response.status === 401) {
         appDispatch({ type: "flash message", value: "Unauthorised" });
+      } else if (error instanceof AxiosError && error.response.status === 409) {
+        appDispatch({
+          type: "flash message",
+          value: "Failed to create application"
+        });
+        setAcronymHelpText("Acronym already exists");
+        setErrors(draft => {
+          draft.acronym = true;
+        });
+        return;
       } else {
         appDispatch({ type: "flash message", value: "There was an error" });
       }
@@ -200,7 +216,7 @@ function CreateApplicationDialog({ open, setOpen }) {
             id="Acronym"
             label="Acronym"
             value={mandatoryFields.acronym}
-            helperText={errors.acronym ? "Required" : ""}
+            helperText={errors.acronym ? acronymHelpText : ""}
             onChange={e => {
               setMandatoryFields(draft => {
                 draft.acronym = e.target.value;
@@ -213,11 +229,11 @@ function CreateApplicationDialog({ open, setOpen }) {
             id="rNumber"
             label="R Number"
             type="number"
-            value={mandatoryFields.rNum}
+            value={mandatoryFields.rNum === NaN ? "" : mandatoryFields.rNum}
             helperText={
               errors.rNum ? "Required" : "Leading zeroes will be removed"
             }
-            inputProps={{ min: 1 }}
+            inputProps={{ min: 0 }}
             onChange={e => {
               setMandatoryFields(draft => {
                 draft.rNum = parseInt(e.target.value, 10);
@@ -241,6 +257,7 @@ function CreateApplicationDialog({ open, setOpen }) {
               }}
               slotProps={{
                 textField: {
+                  readOnly: true,
                   error: errors.startDate,
                   helperText: errors.startDate ? "Required" : ""
                 }
@@ -250,7 +267,6 @@ function CreateApplicationDialog({ open, setOpen }) {
               label="End date"
               format="DD/MM/YYYY"
               value={dayjs(mandatoryFields.endDate)}
-              error={true}
               onChange={e => {
                 console.log(e.format("YYYY-MM-DD"));
                 setMandatoryFields(draft => {
@@ -259,6 +275,7 @@ function CreateApplicationDialog({ open, setOpen }) {
               }}
               slotProps={{
                 textField: {
+                  readOnly: true,
                   error: errors.endDate,
                   helperText: errors.endDate ? "Required" : ""
                 }
@@ -282,6 +299,11 @@ function CreateApplicationDialog({ open, setOpen }) {
                 draft.description = e.target.value;
               })
             }
+            inputProps={{
+              style: { resize: "vertical" }, // Allow vertical resizing
+              component: TextareaAutosize, // Use TextareaAutosize component
+              maxRows: 20
+            }}
           />
         </div>
 
@@ -464,7 +486,10 @@ function CreateApplicationDialog({ open, setOpen }) {
             Submit another
           </Button>
           <Button
-            onClick={() => setOpen(false)}
+            onClick={() => {
+              clear();
+              setOpen(false);
+            }}
             size="small"
             variant="contained"
             color="error"
