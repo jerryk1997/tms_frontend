@@ -32,7 +32,7 @@ function ViewApplicationDialog({ open, setOpen }) {
   return (
     <>
       {pageState.selectedApplication && (
-        <Dialog open={open} maxWidth="lg">
+        <Dialog open={open} maxWidth="lg" className="non-editable">
           <DialogTitle>View Application</DialogTitle>
           <Box
             component="form"
@@ -97,12 +97,24 @@ function ViewApplicationDialog({ open, setOpen }) {
                   format="DD/MM/YYYY"
                   value={dayjs(pageState.selectedApplication.startDate)}
                   readOnly
+                  slotProps={{
+                    textField: {
+                      readOnly: true,
+                      error: false
+                    }
+                  }}
                 />
                 <DatePicker
                   label="End date"
                   format="DD/MM/YYYY"
                   value={dayjs(pageState.selectedApplication.endDate)}
                   readOnly
+                  slotProps={{
+                    textField: {
+                      readOnly: true,
+                      error: false
+                    }
+                  }}
                 />
               </LocalizationProvider>
             </div>
@@ -127,7 +139,7 @@ function ViewApplicationDialog({ open, setOpen }) {
             </div>
 
             {/* ============ Task Permissions ============ */}
-            {pageState.isProjectLead && (
+            {false && (
               <>
                 <Typography variant="h5" component="div">
                   Task Permissions

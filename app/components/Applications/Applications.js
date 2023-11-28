@@ -1,7 +1,7 @@
 // Applications.js
 import React, { useContext, useEffect, useState } from "react";
 import DispatchContext from "../../DispatchContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Axios, { AxiosError } from "axios";
 import { useImmerReducer } from "use-immer";
 
@@ -16,7 +16,7 @@ import {
   Paper,
   ButtonGroup
 } from "@mui/material";
-import { Add, RemoveRedEye, Edit } from "@mui/icons-material";
+import { Add, RemoveRedEye, Edit, ViewKanban } from "@mui/icons-material";
 import CreateApplicationDialog from "./CreateApplicationDialog";
 import LoadingDotsIcon from "../LoadingDotsIcon";
 import ApplicationsStateContext from "./ApplicationsStateContext";
@@ -62,15 +62,17 @@ function Applications() {
         break;
       case "edit application":
         // Find edited application
-        const application = draft.applications.find(
-          application => application.acronym === action.value.acronym
-        );
-
-        // Edit application
-        const editedFields = action.value.editedFields;
-        for (const key in editedFields) {
-          application[key] = editedFields[key];
-        }
+        const newApplications = [];
+        draft.applications.forEach(application => {
+          if (application.acronym === action.value.acronym) {
+            for (const key in action.value.editedFields) {
+              application[key] = action.value.editedFields[key];
+            }
+          }
+          newApplications.push(application);
+        });
+        console.log(newApplications);
+        draft.applications = newApplications;
         break;
       case "select application":
         console.log(
@@ -249,31 +251,38 @@ function Applications() {
 
                 {/* ================== Application List ================== */}
                 <Stack spacing={2}>
-                  {state.applications.map((application, index) => {
-                    return (
-                      <Paper elevation={4} key={index}>
-                        <Card sx={{ minWidth: 275 }}>
-                          <CardContent style={{ display: "flex" }}>
-                            {/* ==== Application details ==== */}
-                            <div style={{ flex: 1, cursor: "pointer" }}>
-                              <Typography variant="h5" component="div">
-                                {application.acronym}
-                              </Typography>
-                              <Typography
-                                sx={{
-                                  color: "text.secondary"
-                                }}
-                              >
-                                Start Date: {application.startDate}
-                                <br />
-                                End Date: {application.endDate}
-                              </Typography>
-                            </div>
-                            {/* ==== Buttons ==== */}
-                            <CardActions>
-                              <ButtonGroup variant="contained">
+                  {state.applications.length > 0 ? (
+                    state.applications.map((application, index) => {
+                      return (
+                        <Paper elevation={4} key={index}>
+                          <Card sx={{ minWidth: 275 }}>
+                            <CardContent style={{ display: "flex" }}>
+                              {/* ==== Application details ==== */}
+                              <div style={{ flex: 1, cursor: "pointer" }}>
+                                <Typography variant="h5" component="div">
+                                  {application.acronym}
+                                </Typography>
+                                {/* <Typography
+                                  sx={{
+                                    color: "text.secondary"
+                                  }}
+                                >
+                                  Start Date:{" "}
+                                  {application.startDate === null
+                                    ? "Not set"
+                                    : application.startDate}
+                                  <br />
+                                  End Date:{" "}
+                                  {application.endDate === null
+                                    ? "Not set"
+                                    : application.endDate}
+                                </Typography> */}
+                              </div>
+                              {/* ==== Buttons ==== */}
+                              <CardActions>
                                 {/* ==== View ==== */}
                                 <Button
+                                  variant="contained"
                                   onClick={() => {
                                     dispatch({
                                       type: "select application",
@@ -284,12 +293,15 @@ function Applications() {
                                   }}
                                   style={{ backgroundColor: "#28A745" }}
                                 >
-                                  <RemoveRedEye />
+                                  <Typography variant="caption">
+                                    View
+                                  </Typography>
                                 </Button>
 
                                 {/* ==== Edit ==== */}
                                 {state.isProjectLead && (
                                   <Button
+                                    variant="contained"
                                     onClick={() => {
                                       dispatch({
                                         type: "select application",
@@ -298,16 +310,37 @@ function Applications() {
                                       handleOpen("edit");
                                     }}
                                   >
-                                    <Edit />
+                                    <Typography variant="caption">
+                                      Edit
+                                    </Typography>
                                   </Button>
                                 )}
-                              </ButtonGroup>
-                            </CardActions>
-                          </CardContent>
-                        </Card>
-                      </Paper>
-                    );
-                  })}
+                                {/* ==== Kanban ==== */}
+
+                                <Button
+                                  color="warning"
+                                  variant="contained"
+                                  onClick={() =>
+                                    navigate(
+                                      `/kanban/${encodeURIComponent(
+                                        application.acronym
+                                      )}`
+                                    )
+                                  }
+                                >
+                                  <Typography variant="caption">
+                                    Enter Kanban
+                                  </Typography>
+                                </Button>
+                              </CardActions>
+                            </CardContent>
+                          </Card>
+                        </Paper>
+                      );
+                    })
+                  ) : (
+                    <Typography variant="h4">No applications yet.</Typography>
+                  )}
                 </Stack>
               </div>
             </Page>

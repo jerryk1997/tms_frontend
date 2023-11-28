@@ -37,8 +37,6 @@ function CreateApplicationDialog({ open, setOpen }) {
   const mandatoryFieldKeys = [
     "acronym",
     "rNum",
-    "startDate",
-    "endDate",
     "createPerm",
     "openPerm",
     "todoPerm",
@@ -49,8 +47,6 @@ function CreateApplicationDialog({ open, setOpen }) {
   const [mandatoryFields, setMandatoryFields] = useImmer({
     acronym: "",
     rNum: NaN,
-    startDate: "",
-    endDate: "",
     createPerm: "",
     openPerm: "",
     todoPerm: "",
@@ -59,14 +55,14 @@ function CreateApplicationDialog({ open, setOpen }) {
   });
 
   const [optionalFields, setOptionalFields] = useImmer({
-    description: ""
+    description: "",
+    startDate: "",
+    endDate: ""
   });
 
   const [errors, setErrors] = useImmer({
     acronym: false,
     rNum: false,
-    startDate: false,
-    endDate: false,
     createPerm: false,
     openPerm: false,
     todoPerm: false,
@@ -84,6 +80,8 @@ function CreateApplicationDialog({ open, setOpen }) {
       });
       setOptionalFields(draft => {
         draft.description = "";
+        draft.startDate = "";
+        draft.endDate = "";
       });
 
       // Clear all errors
@@ -123,11 +121,19 @@ function CreateApplicationDialog({ open, setOpen }) {
 
     // No errors ready to submit
     const newApplication = { ...mandatoryFields };
-    if (optionalFields.description) {
-      newApplication.description = optionalFields.description;
-    } else {
-      newApplication.description = null;
-    }
+    newApplication.description =
+      optionalFields.description !== undefined
+        ? optionalFields.description
+        : null;
+    newApplication.startDate =
+      optionalFields.startDate !== undefined && optionalFields.startDate !== ""
+        ? optionalFields.startDate
+        : null;
+    newApplication.endDate =
+      optionalFields.endDate !== undefined && optionalFields.endDate !== ""
+        ? optionalFields.endDate
+        : null;
+
     console.log(newApplication);
 
     try {
@@ -167,9 +173,9 @@ function CreateApplicationDialog({ open, setOpen }) {
     }
   }
 
-  useEffect(() => {
-    console.log(mandatoryFields);
-  }, [mandatoryFields]);
+  // useEffect(() => {
+  //   console.log(mandatoryFields);
+  // }, [mandatoryFields]);
 
   return (
     <Dialog open={open} maxWidth="lg">
@@ -230,9 +236,7 @@ function CreateApplicationDialog({ open, setOpen }) {
             label="R Number"
             type="number"
             value={mandatoryFields.rNum === NaN ? "" : mandatoryFields.rNum}
-            helperText={
-              errors.rNum ? "Required" : "Leading zeroes will be removed"
-            }
+            helperText={errors.rNum ? "Required" : "Positive integer"}
             inputProps={{ min: 0 }}
             onChange={e => {
               setMandatoryFields(draft => {
@@ -248,36 +252,34 @@ function CreateApplicationDialog({ open, setOpen }) {
             <DatePicker
               label="Start date"
               format="DD/MM/YYYY"
-              value={dayjs(mandatoryFields.startDate)}
+              value={dayjs(optionalFields.startDate)}
               onChange={e => {
                 console.log(e.format("YYYY-MM-DD"));
-                setMandatoryFields(draft => {
+                setOptionalFields(draft => {
                   draft.startDate = e.format("YYYY-MM-DD");
                 });
               }}
               slotProps={{
                 textField: {
                   readOnly: true,
-                  error: errors.startDate,
-                  helperText: errors.startDate ? "Required" : ""
+                  error: false
                 }
               }}
             />
             <DatePicker
               label="End date"
               format="DD/MM/YYYY"
-              value={dayjs(mandatoryFields.endDate)}
+              value={dayjs(optionalFields.endDate)}
               onChange={e => {
                 console.log(e.format("YYYY-MM-DD"));
-                setMandatoryFields(draft => {
+                setOptionalFields(draft => {
                   draft.endDate = e.format("YYYY-MM-DD");
                 });
               }}
               slotProps={{
                 textField: {
                   readOnly: true,
-                  error: errors.endDate,
-                  helperText: errors.endDate ? "Required" : ""
+                  error: false
                 }
               }}
             />

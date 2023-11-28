@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import Axios, { AxiosError } from "axios";
 import dayjs from "dayjs";
+import { TextField } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -119,8 +120,14 @@ function EditPlan({ plan, index }) {
 
   // ======================= JSX =======================
   return (
-    <tr key={index}>
-      <td
+    <tr
+      key={index}
+      style={{
+        textAlign: "center",
+        height: "100%"
+      }}
+    >
+      {/* <td
         style={{
           maxWidth: "250px",
           overflow: "hidden",
@@ -129,6 +136,16 @@ function EditPlan({ plan, index }) {
         }}
       >
         {plan.mvpName}
+      </td> */}
+
+      <td>
+        <TextField
+          id="Plan"
+          label="Plan"
+          value={plan.mvpName}
+          inputProps={{ readOnly: true }}
+          disabled={isEditing}
+        />
       </td>
 
       {/* ========== Start / End date edit =========== */}
@@ -146,7 +163,8 @@ function EditPlan({ plan, index }) {
             readOnly={!isEditing}
             slotProps={{
               textField: {
-                readOnly: true
+                readOnly: true,
+                error: false
               }
             }}
           />
@@ -165,7 +183,8 @@ function EditPlan({ plan, index }) {
             readOnly={!isEditing}
             slotProps={{
               textField: {
-                readOnly: true
+                readOnly: true,
+                error: false
               }
             }}
           />
@@ -176,8 +195,11 @@ function EditPlan({ plan, index }) {
       {planMgmtState.isProjectManager && (
         <td
           style={{
-            maxWidth: "100px",
-            textAlign: "center"
+            height: "100%",
+            textAlign: "center",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center"
           }}
         >
           <div style={{ width: "flex", gap: "30px" }}>
@@ -212,6 +234,7 @@ function EditPlan({ plan, index }) {
                 className="btn btn-primary btn-sm"
                 onClick={handleEdit}
                 ref={button => button && button.blur()}
+                style={{ marginTop: "12px" }}
               >
                 Edit
               </button>

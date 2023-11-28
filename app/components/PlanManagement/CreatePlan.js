@@ -15,8 +15,6 @@ import DispatchContext from "../../DispatchContext";
 import PlanManagementStateContext from "./PlanManagementStateContext";
 import PlanManagementDispatchContext from "./PlanManagementDispatchContext";
 import DispatchCheckContext from "../ProtectedRoute/DispatchCheckContext";
-import PasswordChangeInput from "../PasswordChangeInput";
-import { create } from "@mui/material/styles/createTransitions";
 
 function CreatePlan() {
   const navigate = useNavigate();
@@ -87,11 +85,7 @@ function CreatePlan() {
   useEffect(() => {
     setCanSubmit(false);
     enableSubmitDebounce = setTimeout(() => {
-      setCanSubmit(
-        createFields.mvpName !== "" &&
-          createFields.startDate !== "" &&
-          createFields.endDate !== ""
-      );
+      setCanSubmit(createFields.mvpName !== "");
     }, 600);
 
     return () => clearTimeout(enableSubmitDebounce);
@@ -138,7 +132,6 @@ function CreatePlan() {
             slotProps={{
               textField: {
                 readOnly: true,
-                helperText: "Required",
                 error: false
               }
             }}
@@ -149,7 +142,7 @@ function CreatePlan() {
           <DatePicker
             label="End date"
             format="DD/MM/YYYY"
-            value={dayjs("")}
+            value={dayjs(createFields.endDate)}
             onChange={e => {
               console.log(e.format("YYYY-MM-DD"));
               setCreateFields(draft => {
@@ -159,7 +152,6 @@ function CreatePlan() {
             slotProps={{
               textField: {
                 readOnly: true,
-                helperText: "Required",
                 error: false
               }
             }}
@@ -175,6 +167,7 @@ function CreatePlan() {
           className="btn btn-success btn-sm"
           onClick={handleCreatePlan}
           disabled={!canSubmit}
+          style={{ marginTop: "12px" }}
         >
           Create plan
         </button>

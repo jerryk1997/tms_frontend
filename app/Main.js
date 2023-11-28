@@ -18,6 +18,7 @@ import ProtectedRoute from "./components/ProtectedRoute/ProtectedRoute";
 import UserManagement from "./components/UserManagement/UserManagement";
 import Applications from "./components/Applications/Applications";
 import PlanManagement from "./components/PlanManagement/PlanManagement";
+import Kanban from "./components/TaskManagement/Kanban";
 
 Axios.defaults.baseURL = "http://localhost:8080/api/v1";
 Axios.defaults.withCredentials = true;
@@ -100,7 +101,7 @@ function Main() {
                   <Route path="/home" element={<Home />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/applications" element={<Applications />} />
-                  <Route path="/kanban/:appAcronym" element={<></>} />
+                  <Route path="/kanban/:appAcronym" element={<Kanban />} />
                   <Route
                     path="/kanban/:appAcronym/plans/"
                     element={<PlanManagement />}

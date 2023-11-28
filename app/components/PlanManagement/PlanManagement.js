@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useContext } from "react";
 import Axios, { AxiosError } from "axios";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { useImmerReducer } from "use-immer";
+import { Typography, Button } from "@mui/material";
+import { ArrowBack } from "@mui/icons-material";
 
 // Custom modules
 import Page from "../Page";
 import EditPlan from "./EditPlan";
-import { useImmerReducer } from "use-immer";
 import LoadingDotsIcon from "../LoadingDotsIcon";
 
 // Context
@@ -13,7 +15,6 @@ import DispatchContext from "../../DispatchContext";
 import PlanManagementStateContext from "./PlanManagementStateContext";
 import PlanManagementDispatchContext from "./PlanManagementDispatchContext";
 import CreatePlan from "./CreatePlan";
-import { Typography } from "@mui/material";
 
 function PlanManagement() {
   const { appAcronym } = useParams();
@@ -115,7 +116,18 @@ function PlanManagement() {
         <Page title="User Management">
           <PlanManagementStateContext.Provider value={state}>
             <PlanManagementDispatchContext.Provider value={dispatch}>
-              <h1>{appAcronym} plans</h1>
+              <div style={{ display: "flex", alignItems: "center" }}>
+                {/* ============ Back button ============ */}
+                <Link to={`/kanban/${appAcronym}`}>
+                  <Button>
+                    <ArrowBack fontSize="large" />
+                  </Button>
+                </Link>
+                {/* ============ Title ============ */}
+                <Typography variant="h3" style={{ textAlign: "left" }}>
+                  {appAcronym} plans
+                </Typography>
+              </div>
               <table className="table">
                 <thead className="thead-light">
                   <tr>

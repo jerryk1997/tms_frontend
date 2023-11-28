@@ -97,7 +97,10 @@ function EditApplicationDialog({ open, setOpen }) {
     try {
       const urlSafeAcronym = encodeURI(app.acronym);
       await Axios.put(`/app/${urlSafeAcronym}`, editedFields);
-      pageDispatch({ type: "edit application", value: editedFields });
+      pageDispatch({
+        type: "edit application",
+        value: { acronym: pageState.selectedApplication.acronym, editedFields }
+      });
 
       appDispatch({
         type: "flash message",
@@ -131,7 +134,7 @@ function EditApplicationDialog({ open, setOpen }) {
         }
 
         setCanSubmit(canSubmit);
-      }, 600); // Longer delay to allow passwordError to disable button
+      }, 300); // Longer delay to allow passwordError to disable button
     }
 
     return () => clearTimeout(enableSubmitDebounce);
@@ -236,7 +239,8 @@ function EditApplicationDialog({ open, setOpen }) {
                   }}
                   slotProps={{
                     textField: {
-                      readOnly: true
+                      readOnly: true,
+                      error: false
                     }
                   }}
                 />
@@ -254,7 +258,8 @@ function EditApplicationDialog({ open, setOpen }) {
                   }}
                   slotProps={{
                     textField: {
-                      readOnly: true
+                      readOnly: true,
+                      error: false
                     }
                   }}
                 />
